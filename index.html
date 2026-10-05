@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Bahasa Indonesia - Kelas 3 SD</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Fredoka & Plus Jakarta Sans for friendly look) -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF & AutoTable for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    },
+                    colors: {
+                        brand: {
+                            yellow: '#FFC72C',
+                            orange: '#FF8A00',
+                            blue: '#4361EE',
+                            sky: '#4CC9F0',
+                            pink: '#F72585',
+                            purple: '#7209B7',
+                            green: '#06D6A0',
+                            softBg: '#F8FAFC'
+                        }
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                        'pulse-gentle': 'pulse 3s infinite',
+                        'float': 'float 3s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F0F4F8;
+            background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .heading-font {
+            font-family: 'Fredoka', cursive;
+        }
+        .custom-card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        .btn-3d {
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 0 rgba(0,0,0,0.2);
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+        }
+        .avatar-option.selected {
+            border-color: #FF8A00;
+            background-color: #FFF7ED;
+            transform: scale(1.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800">
+
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 px-4 py-3 shadow-sm">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <!-- Logo & App Title -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="goToHome()">
+                <div class="w-11 h-11 bg-gradient-to-tr from-brand-orange to-brand-yellow rounded-2xl flex items-center justify-center text-white text-2xl shadow-md transform hover:rotate-6 transition">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                </div>
+                <div>
+                    <h1 class="heading-font text-xl md:text-2xl font-bold text-slate-800 leading-none">
+                        Bahasa Ceria <span class="text-xs bg-brand-orange text-white px-2 py-0.5 rounded-full font-sans tracking-wide">SD Kelas 3</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Kuis Interaktif Sesuai Kurikulum Merdeka</p>
+                </div>
+            </div>
+
+            <!-- Audio & Teacher Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Sound Effects Toggle -->
+                <button id="sfxToggleBtn" onclick="toggleSFX()" title="Efek Suara ON/OFF" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs sm:text-sm flex items-center space-x-1.5 transition">
+                    <i id="sfxIcon" class="fa-solid fa-volume-high text-brand-blue"></i>
+                    <span class="hidden md:inline">Efek:</span>
+                    <span id="sfxStatus" class="font-bold text-emerald-600">ON</span>
+                </button>
+
+                <!-- Audio Narration TTS Toggle -->
+                <button id="ttsToggleBtn" onclick="toggleTTS()" title="Narasi Suara Pembaca ON/OFF" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs sm:text-sm flex items-center space-x-1.5 transition">
+                    <i id="ttsIcon" class="fa-solid fa-headset text-brand-purple"></i>
+                    <span class="hidden md:inline">Narasi:</span>
+                    <span id="ttsStatus" class="font-bold text-emerald-600">ON</span>
+                </button>
+
+                <!-- Dashboard Guru Button -->
+                <button onclick="openTeacherDashboard()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-purple text-white font-semibold text-xs sm:text-sm shadow-sm hover:opacity-95 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dasbor Guru</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full px-4 py-6 flex-1 flex flex-col justify-center">
+
+        <!-- SCREEN 1: REGISTRATION / START SCREEN -->
+        <div id="screenRegistration" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 custom-card-shadow text-center space-y-6 max-w-xl mx-auto w-full">
+            <div class="space-y-2">
+                <span class="inline-block px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold uppercase tracking-wider">
+                    🌟 Petualangan Belajar
+                </span>
+                <h2 class="heading-font text-2xl sm:text-3xl font-bold text-slate-800">
+                    Halo Sahabat Cilik! 👋
+                </h2>
+                <p class="text-slate-600 text-sm">
+                    Isi namamu di bawah ini untuk memulai kuis Bahasa Indonesia yang seru!
+                </p>
+            </div>
+
+            <!-- Avatar Selection -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 text-left">Pilih Karakter Maskotmu:</label>
+                <div class="grid grid-cols-4 gap-3">
+                    <div onclick="selectAvatar('🐰')" class="avatar-option selected cursor-pointer p-3 rounded-2xl border-2 border-slate-200 hover:border-amber-400 bg-slate-50 text-3xl transition text-center" data-avatar="🐰">🐰</div>
+                    <div onclick="selectAvatar('🐻')" class="avatar-option cursor-pointer p-3 rounded-2xl border-2 border-slate-200 hover:border-amber-400 bg-slate-50 text-3xl transition text-center" data-avatar="🐻">🐻</div>
+                    <div onclick="selectAvatar('🐱')" class="avatar-option cursor-pointer p-3 rounded-2xl border-2 border-slate-200 hover:border-amber-400 bg-slate-50 text-3xl transition text-center" data-avatar="🐱">🐱</div>
+                    <div onclick="selectAvatar('🤖')" class="avatar-option cursor-pointer p-3 rounded-2xl border-2 border-slate-200 hover:border-amber-400 bg-slate-50 text-3xl transition text-center" data-avatar="🤖">🤖</div>
+                </div>
+            </div>
+
+            <!-- Identity Input Form -->
+            <form id="identityForm" onsubmit="handleStartQuiz(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Lengkap Murid <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input type="text" id="studentName" required placeholder="Contoh: Budi Santoso" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none text-slate-800 font-semibold text-sm transition">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Kelas <span class="text-red-500">*</span></label>
+                        <select id="studentClass" required class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none text-slate-800 font-semibold text-sm transition bg-white">
+                            <option value="3-A">Kelas 3-A</option>
+                            <option value="3-B">Kelas 3-B</option>
+                            <option value="3-C">Kelas 3-C</option>
+                            <option value="3-D">Kelas 3-D</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mode Tingkat</label>
+                        <select id="quizMode" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none text-slate-800 font-semibold text-sm transition bg-white">
+                            <option value="adaptive">⚡ Otomatis (Adaptif)</option>
+                            <option value="level1">🌱 Level 1 (Dasar)</option>
+                            <option value="level2">⭐ Level 2 (Sedang)</option>
+                            <option value="level3">🏆 Level 3 (Tantangan)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full btn-3d py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-orange to-amber-500 text-white font-bold text-base shadow-lg hover:brightness-105 transition flex items-center justify-center space-x-2">
+                    <span>Mulai Main Kuis Sekarang</span>
+                    <i class="fa-solid fa-rocket"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- SCREEN 2: QUIZ PLAYGROUND -->
+        <div id="screenQuiz" class="hidden space-y-4">
+            <!-- Header Progress Card -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <div id="activeAvatar" class="text-3xl bg-amber-100 p-2 rounded-xl">🐰</div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 id="displayStudentName" class="font-bold text-slate-800 text-base">Nama Murid</h3>
+                            <span id="displayStudentClass" class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">3-A</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-xs text-slate-500 mt-0.5">
+                            <span id="displayLevelBadge" class="bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-md">Level 1: Dasar</span>
+                            <span>• Soal <span id="currentQuestionNum">1</span> dari <span id="totalQuestionsNum">10</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress & Score -->
+                <div class="w-full sm:w-1/3 space-y-1">
+                    <div class="flex justify-between text-xs font-bold">
+                        <span class="text-slate-500">Kemajuan</span>
+                        <span id="scoreTracker" class="text-brand-orange">Skor: 0</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden p-0.5 border border-slate-200">
+                        <div id="progressBar" class="bg-gradient-to-r from-brand-yellow to-brand-orange h-full rounded-full transition-all duration-300" style="width: 10%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 custom-card-shadow space-y-6 relative">
+                
+                <!-- Speech Replay Button -->
+                <button onclick="readQuestionAudio()" title="Dengarkan Soal Lagi" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-brand-purple/10 hover:bg-brand-purple/20 text-brand-purple flex items-center justify-center transition">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+
+                <!-- Reading Passage (If exists) -->
+                <div id="passageContainer" class="hidden bg-amber-50/80 border border-amber-200 rounded-2xl p-4 text-slate-700 text-sm leading-relaxed space-y-1">
+                    <div class="flex items-center space-x-2 font-bold text-amber-800 text-xs uppercase">
+                        <i class="fa-solid fa-book"></i>
+                        <span>Bacalah Teks Ringkas Berikut:</span>
+                    </div>
+                    <p id="passageText" class="italic font-serif text-base text-slate-800"></p>
+                </div>
+
+                <!-- Question Text -->
+                <div class="space-y-2">
+                    <span id="questionTopicTag" class="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold uppercase tracking-wider">
+                        Ejaan & Tanda Baca
+                    </span>
+                    <h3 id="questionText" class="heading-font text-xl sm:text-2xl font-bold text-slate-800 leading-snug">
+                        ...
+                    </h3>
+                </div>
+
+                <!-- Options Grid -->
+                <div id="optionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                    <!-- Option buttons dynamically generated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- FEEDBACK MODAL (EDU-FEEDBACK) -->
+        <div id="feedbackModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 custom-card-shadow space-y-5 transform transition-all animate-bounce-short">
+                
+                <!-- Feedback Header Icon & Status -->
+                <div id="feedbackHeader" class="flex items-center space-x-3">
+                    <div id="feedbackIconBg" class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl text-white shadow-md">
+                        <i id="feedbackIcon" class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <h4 id="feedbackTitle" class="heading-font text-xl font-bold text-slate-800">Jawaban Tepat Sekali! 🎉</h4>
+                        <p id="feedbackSubtitle" class="text-xs font-semibold text-slate-500">Apresiasi & Penjelasan Edukasi</p>
+                    </div>
+                </div>
+
+                <!-- Feedback Body & Step-by-Step Explanation -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2 text-sm">
+                    <div class="font-bold text-slate-700 flex items-center space-x-1.5 text-xs uppercase">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        <span>Cara Pengerjaan & Pembahasan:</span>
+                    </div>
+                    <div id="feedbackExplanation" class="text-slate-700 text-sm leading-relaxed space-y-2">
+                        <!-- Detailed step-by-step logic -->
+                    </div>
+                </div>
+
+                <!-- Continue Button -->
+                <button onclick="nextQuestion()" class="w-full btn-3d py-3.5 px-6 rounded-2xl bg-brand-blue hover:bg-blue-700 text-white font-bold text-base shadow-md transition flex items-center justify-center space-x-2">
+                    <span>Lanjut Ke Soal Berikutnya</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: RESULT & CERTIFICATE -->
+        <div id="screenResult" class="hidden bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 custom-card-shadow text-center space-y-6 max-w-xl mx-auto w-full">
+            <div class="space-y-2">
+                <div class="inline-block p-4 bg-amber-100 rounded-full text-amber-500 text-4xl mb-1">
+                    🏆
+                </div>
+                <h2 class="heading-font text-3xl font-bold text-slate-800">
+                    Hore! Kuis Selesai! 🎉
+                </h2>
+                <p class="text-slate-600 text-sm">
+                    Selamat, kamu telah menyelesaikan petualangan kuis Bahasa Indonesia!
+                </p>
+            </div>
+
+            <!-- Score Box -->
+            <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-6 border border-amber-200 space-y-3">
+                <div class="text-xs font-bold uppercase tracking-widest text-amber-700">Skor Akhir Kamu</div>
+                <div id="finalScoreDisplay" class="heading-font text-6xl font-extrabold text-brand-orange">
+                    100
+                </div>
+                <div id="starRating" class="text-2xl text-amber-400 space-x-1">
+                    ⭐⭐⭐
+                </div>
+                <p id="gradeFeedbackText" class="text-sm font-semibold text-slate-700">
+                    Luar Biasa! Kamu Sangat Memahami Bahasa Indonesia!
+                </p>
+            </div>
+
+            <!-- Stat Breakdown -->
+            <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+                    <div id="statCorrect" class="text-xl font-bold text-emerald-600">0</div>
+                    <div class="text-xs text-slate-500">Benar</div>
+                </div>
+                <div class="bg-rose-50 p-3 rounded-2xl border border-rose-100">
+                    <div id="statIncorrect" class="text-xl font-bold text-rose-600">0</div>
+                    <div class="text-xs text-slate-500">Salah</div>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-2xl border border-blue-100">
+                    <div id="statAccuracy" class="text-xl font-bold text-blue-600">0%</div>
+                    <div class="text-xs text-slate-500">Akurasi</div>
+                </div>
+            </div>
+
+            <!-- Cloud Sync Status Indicator -->
+            <div id="cloudSyncStatus" class="flex items-center justify-center space-x-2 text-xs text-slate-500 bg-slate-50 py-2 rounded-xl">
+                <i class="fa-solid fa-cloud-arrow-up text-brand-blue animate-pulse"></i>
+                <span>Menyimpan nilai ke Dasbor Guru...</span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="resetToQuiz()" class="flex-1 btn-3d py-3 rounded-xl bg-brand-orange text-white font-bold text-sm shadow hover:brightness-105 transition">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Coba Lagi
+                </button>
+                <button onclick="openTeacherDashboard()" class="flex-1 btn-3d py-3 rounded-xl bg-slate-800 text-white font-bold text-sm shadow hover:bg-slate-900 transition">
+                    <i class="fa-solid fa-chart-line mr-1"></i> Lihat Dasbor Guru
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: TEACHER DASHBOARD (DASBOR GURU) -->
+        <div id="screenTeacherDashboard" class="hidden space-y-6">
+            <!-- Top Dashboard Bar -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full uppercase tracking-wider">
+                            👨‍🏫 Area Tenaga Pendidik
+                        </span>
+                        <!-- Status Sync Badge -->
+                        <span id="dashStorageModeBadge" class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full flex items-center space-x-1">
+                            <i class="fa-solid fa-database"></i>
+                            <span id="dashStorageModeText">Mode Lokal Browser</span>
+                        </span>
+                    </div>
+                    <h2 class="heading-font text-2xl font-bold text-slate-800 mt-2">
+                        Dasbor Hasil Kuis Real-Time
+                    </h2>
+                    <p id="dashStorageSubtext" class="text-xs text-slate-500">
+                        Catatan: Jalankan dengan Firebase Cloud aktif untuk sinkronisasi antar perangkat secara publik.
+                    </p>
+                </div>
+
+                <!-- Export Action Buttons & Sample Generator -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="seedSampleStudents()" title="Tambah contoh data murid untuk uji coba dasbor" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>+ Contoh Data Murid</span>
+                    </button>
+                    <button onclick="exportToExcel()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Unduh Excel</span>
+                    </button>
+                    <button onclick="exportToPDF()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Unduh PDF</span>
+                    </button>
+                    <button onclick="exportToWord()" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-word"></i>
+                        <span>Unduh Word</span>
+                    </button>
+                    <button onclick="goToHome()" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition">
+                        <i class="fa-solid fa-house"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Analytics Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 custom-card-shadow">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Total Siswa Main</div>
+                    <div id="dashTotalStudents" class="heading-font text-3xl font-bold text-slate-800 mt-1">0</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 custom-card-shadow">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Rata-rata Nilai</div>
+                    <div id="dashAvgScore" class="heading-font text-3xl font-bold text-brand-blue mt-1">0</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 custom-card-shadow">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Nilai Tertinggi</div>
+                    <div id="dashMaxScore" class="heading-font text-3xl font-bold text-emerald-500 mt-1">0</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 custom-card-shadow">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Akurasi Rata-rata</div>
+                    <div id="dashAvgAccuracy" class="heading-font text-3xl font-bold text-brand-orange mt-1">0%</div>
+                </div>
+            </div>
+
+            <!-- Search & Filter Controls -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-3 justify-between items-center">
+                <div class="relative w-full sm:w-64">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="dashSearchInput" oninput="filterDashboardTable()" placeholder="Cari nama siswa..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 outline-none focus:border-brand-blue">
+                </div>
+
+                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                    <select id="dashClassFilter" onchange="filterDashboardTable()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white font-semibold">
+                        <option value="ALL">Semua Kelas</option>
+                        <option value="3-A">Kelas 3-A</option>
+                        <option value="3-B">Kelas 3-B</option>
+                        <option value="3-C">Kelas 3-C</option>
+                        <option value="3-D">Kelas 3-D</option>
+                    </select>
+
+                    <button onclick="refreshDashboardData()" title="Muat Ulang Data" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Real-time Data Table -->
+            <div class="bg-white rounded-3xl border border-slate-100 custom-card-shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-700">
+                        <thead class="bg-slate-50 border-b border-slate-200 uppercase font-bold text-slate-500">
+                            <tr>
+                                <th class="p-4">Tanggal & Waktu</th>
+                                <th class="p-4">Nama Siswa</th>
+                                <th class="p-4">Kelas</th>
+                                <th class="p-4">Mode / Level</th>
+                                <th class="p-4 text-center">Jawaban Benar</th>
+                                <th class="p-4 text-center">Skor Akhir</th>
+                                <th class="p-4 text-center">Predikat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardTableBody" class="divide-y divide-slate-100 font-medium">
+                            <!-- Table rows injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyTableMessage" class="hidden p-8 text-center text-slate-400">
+                    <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
+                    <p>Belum ada data nilai kuis yang tersimpan.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white/60">
+        <p>© 2026 Aplikasi Kuis Bahasa Indonesia SD Kelas 3 - Didesain Edukatif & Interaktif</p>
+    </footer>
+
+    <!-- Firebase Modular Setup Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration Guard
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kuis-bahasa-sd-kelas3';
+
+        let app, db, auth;
+        let isFirebaseActive = false;
+
+        if (firebaseConfig && firebaseConfig.apiKey !== "demo-api-key") {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                isFirebaseActive = true;
+                console.log("Firebase Cloud Firestore initialized successfully.");
+            } catch (e) {
+                console.warn("Firestore initialization error, switching to Local Storage:", e);
+            }
+        }
+
+        window.checkCloudStatus = function() {
+            return isFirebaseActive;
+        };
+
+        // Global functions tied to Firebase / Local Storage
+        window.saveResultToCloud = async function(resultData) {
+            if (!isFirebaseActive || !db) {
+                saveToLocalStorageFallback(resultData);
+                return;
+            }
+
+            try {
+                const resultsCol = collection(db, 'artifacts', appId, 'public', 'data', 'quiz_results');
+                await addDoc(resultsCol, {
+                    ...resultData,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (err) {
+                console.error("Error saving result to Firestore, saving locally:", err);
+                saveToLocalStorageFallback(resultData);
+            }
+        };
+
+        window.subscribeToCloudResults = function(callback) {
+            if (!isFirebaseActive || !db) {
+                const localData = getLocalStorageFallback();
+                callback(localData);
+                return () => {};
+            }
+
+            try {
+                const resultsCol = collection(db, 'artifacts', appId, 'public', 'data', 'quiz_results');
+                return onSnapshot(resultsCol, (snapshot) => {
+                    const dataList = [];
+                    snapshot.forEach((doc) => {
+                        dataList.push({ id: doc.id, ...doc.data() });
+                    });
+                    dataList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                    callback(dataList);
+                }, (error) => {
+                    console.error("Firestore listener error:", error);
+                    callback(getLocalStorageFallback());
+                });
+            } catch (err) {
+                console.error("Failed to subscribe to Firestore:", err);
+                callback(getLocalStorageFallback());
+                return () => {};
+            }
+        };
+
+        window.saveToLocalStorageFallback = function(data) {
+            const list = getLocalStorageFallback();
+            list.unshift({ ...data, timestamp: new Date().toISOString() });
+            localStorage.setItem('kuis_sd_results_backup', JSON.stringify(list));
+        };
+
+        window.getLocalStorageFallback = function() {
+            try {
+                return JSON.parse(localStorage.getItem('kuis_sd_results_backup') || '[]');
+            } catch {
+                return [];
+            }
+        };
+    </script>
+
+    <!-- Main Logic Script (Questions, Audio, UI Flow) -->
+    <script>
+        
+        // QUESTION BANK (Kurikulum Merdeka Kelas 3 SD - Bahasa Indonesia)
+        const QUESTION_BANK = [
+            // LEVEL 1: DASAR (Kosa kata, Huruf Kapital, Tanda Baca)
+            {
+                id: 1,
+                level: 1,
+                topic: "Tanda Baca",
+                question: "Manakah kalimat yang menggunakan tanda baca yang BENAR?",
+                options: [
+                    "Dimana rumah Ibu Guru.",
+                    "Siti membeli buku, pensil, dan penghapus.",
+                    "Aduh, sakit sekali kaki ku?",
+                    "Wah, indah sekali pemandangan ini."
+                ],
+                correct: 1,
+                praise: "Luar biasa! 🎉 Pengetahuan tanda bacamu jempolan!",
+                explanation: "Kalimat perincian benda membutuhkan tanda koma (,) sebelum kata 'dan', serta diakhiri tanda titik (.). Pilihan B memenuhi semua kaidah ejaan yang tepat."
+            },
+            {
+                id: 2,
+                level: 1,
+                topic: "Huruf Kapital",
+                question: "Penggunaan huruf kapital yang tepat terdapat pada kalimat...",
+                options: [
+                    "pada hari senin, Budi pergi ke jakarta.",
+                    "Pada hari Senin, Budi pergi ke Jakarta.",
+                    "Pada hari senin, budi pergi ke Jakarta.",
+                    "pada Hari Senin, Budi pergi Ke jakarta."
+                ],
+                correct: 1,
+                praise: "Hebat Sekali! ⭐ Huruf kapitalmu sangat tepat!",
+                explanation: "Huruf kapital digunakan pada: (1) Awal kalimat ('Pada'), (2) Nama hari ('Senin'), (3) Nama orang ('Budi'), dan (4) Nama kota/tempat ('Jakarta')."
+            },
+            {
+                id: 3,
+                level: 1,
+                topic: "Jenis Kata",
+                question: "Kata berikut ini yang termasuk jenis **Kata Kerja** adalah...",
+                options: [
+                    "Meja",
+                    "Menulis",
+                    "Cantik",
+                    "Rumah"
+                ],
+                correct: 1,
+                praise: "Pintar! 🌟 Kamu berhasil mengenali kata kerja!",
+                explanation: "Kata kerja (verba) adalah kata yang menggambarkan suatu tindakan atau aktivitas. 'Menulis' adalah perbuatan yang dilakukan oleh seseorang."
+            },
+
+            // LEVEL 2: SEDANG (Imbuhan, Gagasan Pokok, Kalimat Utama)
+            {
+                id: 4,
+                level: 2,
+                topic: "Imbuhan kata",
+                passage: "Rani suka (bantu) ibunya menyiram bunga di halaman rumah setiap sore.",
+                question: "Kata dalam kurung (bantu) seharusnya diberi imbuhan menjadi...",
+                options: [
+                    "Membantu",
+                    "Dibantu",
+                    "Pembantu",
+                    "Terbantu"
+                ],
+                correct: 0,
+                praise: "Joss! 👍 Pembentukan kata imbuhanmu sangat jeli!",
+                explanation: "Kata dasar 'bantu' jika mendapat awalan me- (meN-) menjadi 'membantu', yang bermakna melakukan tindakan menolong."
+            },
+            {
+                id: 5,
+                level: 2,
+                topic: "Ide Pokok",
+                passage: "Kelinci adalah hewan herbivora. Hewan ini sangat suka makan wortel dan sayuran hijau. Gigi depan kelinci sangat tajam untuk mengunyah makanan.",
+                question: "Ide pokok dari paragraf di atas adalah...",
+                options: [
+                    "Gigi tajam kelinci",
+                    "Kelinci suka melompat tinggi",
+                    "Makanan dan kebiasaan makan kelinci",
+                    "Warna bulu kelinci yang indah"
+                ],
+                correct: 2,
+                praise: "Keren Banget! 🧠 Pemahaman bacaanmu sangat tajam!",
+                explanation: "Seluruh kalimat dalam teks menceritakan tentang apa yang dimakan kelinci (wortel & sayuran) serta cara mengunyahnya. Jadi ide pokoknya adalah tentang makanan kelinci."
+            },
+            {
+                id: 6,
+                level: 2,
+                topic: "Kata Depan",
+                question: "Penulisan kata depan 'di' dan 'ke' yang tepat berada pada kalimat...",
+                options: [
+                    "Ibu membeli ikan di pasar lalu pulang ke rumah.",
+                    "Ibu membeli ikan dipasar lalu pulang kerumah.",
+                    "Ibu membeli ikan di-pasar lalu pulang ke-rumah.",
+                    "Ibu membeli ikan dipasar lalu pulang ke rumah."
+                ],
+                correct: 0,
+                praise: "Tepat Sekali! 🏆 Penulisan kata depanmu sudah sempurna!",
+                explanation: "Kata depan 'di' dan 'ke' yang menunjukkan tempat harus ditulis **terpisah** dari kata yang mengikutinya ('di pasar', 'ke rumah')."
+            },
+
+            // LEVEL 3: TANTANGAN (Puisi Anak, Peribahasa/Ungkapan, Menyusun Kalimat)
+            {
+                id: 7,
+                level: 3,
+                topic: "Puisi Anak",
+                passage: "Kau mengajariku tanpa lelah,\nMemberiku ilmu setiap hari,\nTerima kasih wahai guruku,\nJasa-jasamu sungguh berarti.",
+                question: "Puisi di atas menceritakan tentang ungkapan rasa terima kasih kepada...",
+                options: [
+                    "Sahabat",
+                    "Ibu Tercinta",
+                    "Bapak/Ibu Guru",
+                    "Dokter"
+                ],
+                correct: 2,
+                praise: "Luar Biasa! 📖 Kamu mahir menghayati isi puisi!",
+                explanation: "Baris 'Terima kasih wahai guruku' dan 'Kau mengajariku tanpa lelah' memperlihatkan secara jelas bahwa puisi ditujukan untuk Guru."
+            },
+            {
+                id: 8,
+                level: 3,
+                topic: "Ungkapan Bahasa",
+                question: "Siti adalah anak yang rajin dan tidak sombong. Ia selalu menjadi **buah bibir** karena kebaikannya. Arti ungkapan 'buah bibir' adalah...",
+                options: [
+                    "Bahan pembicaraan orang banyak",
+                    "Buah yang rasanya manis",
+                    "Anak yang suka berbohong",
+                    "Suka makan buah"
+                ],
+                correct: 0,
+                praise: "Super Pintar! 💡 Kamu tahu arti kiasan bahasa!",
+                explanation: "Ungkapan 'buah bibir' berarti topik atau orang yang sering dibicarakan oleh orang lain karena kebaikan atau prestasinya."
+            },
+            {
+                id: 9,
+                level: 3,
+                topic: "Susunan Kalimat",
+                question: "Susunlah kata acak berikut menjadi kalimat yang padu: [membaca - library - Budi - di - buku - perpustakaan]",
+                options: [
+                    "Budi membaca di perpustakaan buku.",
+                    "Di perpustakaan Budi membaca buku.",
+                    "Budi membaca buku di perpustakaan.",
+                    "Membaca buku Budi di perpustakaan."
+                ],
+                correct: 2,
+                praise: "Hebat Sekali! 🧩 Tata susunan kalimatmu sangat efektif!",
+                explanation: "Struktur kalimat efektif Bahasa Indonesia yang benar adalah Subjek (Budi) + Predikat (membaca) + Objek (buku) + Keterangan Tempat (di perpustakaan)."
+            },
+            {
+                id: 10,
+                level: 3,
+                topic: "Antonim (Lawan Kata)",
+                question: "Lawan kata (antonim) dari kata **'Hemat'** adalah...",
+                options: [
+                    "Pelit",
+                    "Boros",
+                    "Rajin",
+                    "Cermat"
+                ],
+                correct: 1,
+                praise: "Mantap! 🎯 Penguasaan kosakatamu luas sekali!",
+                explanation: "Hemat berarti menggunakan sesuatu secara tidak berlebihan. Lawan kata (antonim) dari hemat adalah 'Boros' (suka membuang-buang uang/barang)."
+            }
+        ];
+
+
+        // AUDIO & SYNTHESIZER SYSTEM (Web Audio API)
+        let sfxEnabled = true;
+        let ttsEnabled = true;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Synthesize Sound Effects (No external audio files needed!)
+        function playSFX(type) {
+            if (!sfxEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+
+                if (type === 'correct') {
+                    // Major chime sequence (C5, E5, G5, C6)
+                    const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                        gain.gain.setValueAtTime(0.2, now + i * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + i * 0.08);
+                        osc.stop(now + i * 0.08 + 0.3);
+                    });
+                } else if (type === 'wrong') {
+                    // Descending buzz chime
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(130, now + 0.3);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'click') {
+                    // Short soft pop
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'win') {
+                    // Celebratory fanfare
+                    [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.frequency.setValueAtTime(f, now + i * 0.12);
+                        gain.gain.setValueAtTime(0.25, now + i * 0.12);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.4);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + i * 0.12);
+                        osc.stop(now + i * 0.12 + 0.45);
+                    });
+                }
+            } catch (e) {
+                console.warn("Audio Context error:", e);
+            }
+        }
+
+        // Web Speech API Narrator (TTS)
+        function speakText(text) {
+            if (!ttsEnabled || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel(); // Stop current speech
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID'; // Indonesian voice
+            utterance.rate = 0.95; // Friendly clear pace
+            utterance.pitch = 1.05; // Friendly tone for children
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleSFX() {
+            sfxEnabled = !sfxEnabled;
+            document.getElementById('sfxStatus').textContent = sfxEnabled ? "ON" : "OFF";
+            document.getElementById('sfxStatus').className = sfxEnabled ? "font-bold text-emerald-600" : "font-bold text-slate-400";
+            if (sfxEnabled) playSFX('click');
+        }
+
+        function toggleTTS() {
+            ttsEnabled = !ttsEnabled;
+            document.getElementById('ttsStatus').textContent = ttsEnabled ? "ON" : "OFF";
+            document.getElementById('ttsStatus').className = ttsEnabled ? "font-bold text-emerald-600" : "font-bold text-slate-400";
+            if (!ttsEnabled && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            } else {
+                playSFX('click');
+            }
+        }
+
+
+        // APP STATE VARIABLES
+        let currentStudent = {
+            name: '',
+            class: '',
+            avatar: '🐰',
+            mode: 'adaptive'
+        };
+
+        let activeQuizQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let correctAnswersCount = 0;
+        let selectedOptionIndex = null;
+        let dashboardDataUnsubscribe = null;
+
+        function selectAvatar(emoji) {
+            currentStudent.avatar = emoji;
+            document.querySelectorAll('.avatar-option').forEach(el => {
+                if (el.dataset.avatar === emoji) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+            playSFX('click');
+        }
+
+        // Navigation between Screens
+        function showScreen(screenId) {
+            ['screenRegistration', 'screenQuiz', 'screenResult', 'screenTeacherDashboard'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function goToHome() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            showScreen('screenRegistration');
+        }
+
+
+        // START QUIZ HANDLER
+        function handleStartQuiz(e) {
+            e.preventDefault();
+            playSFX('click');
+
+            currentStudent.name = document.getElementById('studentName').value.trim();
+            currentStudent.class = document.getElementById('studentClass').value;
+            currentStudent.mode = document.getElementById('quizMode').value;
+
+            // Prepare question queue based on mode
+            if (currentStudent.mode === 'adaptive') {
+                // Adaptive: Start with Level 1, then Level 2, then Level 3
+                activeQuizQuestions = [
+                    ...QUESTION_BANK.filter(q => q.level === 1),
+                    ...QUESTION_BANK.filter(q => q.level === 2),
+                    ...QUESTION_BANK.filter(q => q.level === 3)
+                ];
+            } else if (currentStudent.mode === 'level1') {
+                activeQuizQuestions = QUESTION_BANK.filter(q => q.level === 1);
+            } else if (currentStudent.mode === 'level2') {
+                activeQuizQuestions = QUESTION_BANK.filter(q => q.level === 2);
+            } else if (currentStudent.mode === 'level3') {
+                activeQuizQuestions = QUESTION_BANK.filter(q => q.level === 3);
+            }
+
+            // Shuffle slightly within level boundaries
+            currentQuestionIndex = 0;
+            score = 0;
+            correctAnswersCount = 0;
+
+            // Setup UI
+            document.getElementById('displayStudentName').textContent = currentStudent.name;
+            document.getElementById('displayStudentClass').textContent = currentStudent.class;
+            document.getElementById('activeAvatar').textContent = currentStudent.avatar;
+            document.getElementById('totalQuestionsNum').textContent = activeQuizQuestions.length;
+
+            showScreen('screenQuiz');
+            loadCurrentQuestion();
+        }
+
+        // LOAD QUESTION INTO PLAYGROUND
+        function loadCurrentQuestion() {
+            const q = activeQuizQuestions[currentQuestionIndex];
+            if (!q) return;
+
+            // Update Progress UI
+            document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
+            document.getElementById('scoreTracker').textContent = `Skor: ${score}`;
+            const pct = ((currentQuestionIndex) / activeQuizQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = `${Math.max(pct, 10)}%`;
+
+            // Badge Level Tag
+            const badgeEl = document.getElementById('displayLevelBadge');
+            if (q.level === 1) {
+                badgeEl.textContent = "🌱 Level 1: Dasar";
+                badgeEl.className = "bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md";
+            } else if (q.level === 2) {
+                badgeEl.textContent = "⭐ Level 2: Sedang";
+                badgeEl.className = "bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-md";
+            } else {
+                badgeEl.textContent = "🏆 Level 3: Tantangan";
+                badgeEl.className = "bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-md";
+            }
+
+            document.getElementById('questionTopicTag').textContent = q.topic;
+
+            // Passage
+            const passageBox = document.getElementById('passageContainer');
+            if (q.passage) {
+                passageBox.classList.remove('hidden');
+                document.getElementById('passageText').textContent = `"${q.passage}"`;
+            } else {
+                passageBox.classList.add('hidden');
+            }
+
+            document.getElementById('questionText').textContent = q.question;
+
+            // Generate Option Buttons
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            const labels = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "btn-3d w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-brand-blue bg-white font-semibold text-slate-800 text-sm sm:text-base transition flex items-start space-x-3";
+                btn.onclick = () => handleAnswerSelect(idx);
+
+                btn.innerHTML = `
+                    <span class="w-7 h-7 rounded-xl bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0 text-xs">
+                        ${labels[idx]}
+                    </span>
+                    <span class="pt-0.5 leading-snug">${optText}</span>
+                `;
+                grid.appendChild(btn);
+            });
+
+            // Read aloud narration
+            readQuestionAudio();
+        }
+
+        function readQuestionAudio() {
+            const q = activeQuizQuestions[currentQuestionIndex];
+            if (!q) return;
+            
+            let fullText = "";
+            if (q.passage) fullText += "Bacalah teks berikut. " + q.passage + ". ";
+            fullText += q.question;
+
+            speakText(fullText);
+        }
+
+
+        // ANSWER SELECTION & EVALUATION
+        function handleAnswerSelect(selectedIdx) {
+            const q = activeQuizQuestions[currentQuestionIndex];
+            const isCorrect = selectedIdx === q.correct;
+
+            if (isCorrect) {
+                playSFX('correct');
+                score += 10;
+                correctAnswersCount++;
+            } else {
+                playSFX('wrong');
+            }
+
+            // Show Feedback Modal
+            const modal = document.getElementById('feedbackModal');
+            const iconBg = document.getElementById('feedbackIconBg');
+            const icon = document.getElementById('feedbackIcon');
+            const title = document.getElementById('feedbackTitle');
+            const explanation = document.getElementById('feedbackExplanation');
+
+            if (isCorrect) {
+                iconBg.className = "w-14 h-14 rounded-2xl flex items-center justify-center text-2xl text-white bg-emerald-500 shadow-md";
+                icon.className = "fa-solid fa-check";
+                title.textContent = q.praise || "Hebat! Jawabanmu Benar! 🎉";
+                title.className = "heading-font text-xl font-bold text-emerald-600";
+            } else {
+                iconBg.className = "w-14 h-14 rounded-2xl flex items-center justify-center text-2xl text-white bg-rose-500 shadow-md";
+                icon.className = "fa-solid fa-xmark";
+                title.textContent = "Hampir Tepat! Jangan Berkecil Hati 😊";
+                title.className = "heading-font text-xl font-bold text-rose-600";
+            }
+
+            // Detailed Educational Explanation
+            const correctAnswerText = q.options[q.correct];
+            explanation.innerHTML = `
+                <div class="p-2.5 rounded-xl bg-white border border-slate-200 mb-2">
+                    <span class="text-xs text-slate-500 font-bold block uppercase">Jawaban Yang Benar:</span>
+                    <span class="font-bold text-emerald-700">${correctAnswerText}</span>
+                </div>
+                <p>${q.explanation}</p>
+            `;
+
+            modal.classList.remove('hidden');
+
+            // Narration of feedback
+            if (isCorrect) {
+                speakText("Hebat! Jawabanmu benar. " + q.explanation);
+            } else {
+                speakText("Hampir tepat. Jawaban yang benar adalah " + correctAnswerText + ". " + q.explanation);
+            }
+        }
+
+        function nextQuestion() {
+            playSFX('click');
+            document.getElementById('feedbackModal').classList.add('hidden');
+
+            currentQuestionIndex++;
+            if (currentQuestionIndex < activeQuizQuestions.length) {
+                loadCurrentQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+
+        // FINISH QUIZ & SYNC TO CLOUD
+        async function finishQuiz() {
+            playSFX('win');
+            
+            // Confetti effect
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            const total = activeQuizQuestions.length;
+            const accuracy = Math.round((correctAnswersCount / total) * 100);
+            const finalScore = score;
+
+            document.getElementById('finalScoreDisplay').textContent = finalScore;
+            document.getElementById('statCorrect').textContent = correctAnswersCount;
+            document.getElementById('statIncorrect').textContent = total - correctAnswersCount;
+            document.getElementById('statAccuracy').textContent = `${accuracy}%`;
+
+            // Star Rating
+            const starsEl = document.getElementById('starRating');
+            const feedbackText = document.getElementById('gradeFeedbackText');
+            if (accuracy >= 80) {
+                starsEl.textContent = "⭐⭐⭐";
+                feedbackText.textContent = "Luar Biasa! Kamu Sangat Memahami Bahasa Indonesia! 🏆";
+            } else if (accuracy >= 60) {
+                starsEl.textContent = "⭐⭐";
+                feedbackText.textContent = "Bagus Sekali! Teruskan Semangat Belajarmu! ⭐";
+            } else {
+                starsEl.textContent = "⭐";
+                feedbackText.textContent = "Tetap Semangat! Ayo Belajar Lebih Giat Lagi! 💪";
+            }
+
+            showScreen('screenResult');
+
+            // Prepare Payload for Real-time Cloud Firestore Sync
+            const resultData = {
+                studentName: currentStudent.name,
+                studentClass: currentStudent.class,
+                avatar: currentStudent.avatar,
+                mode: currentStudent.mode,
+                score: finalScore,
+                correctCount: correctAnswersCount,
+                totalQuestions: total,
+                accuracy: accuracy,
+                completedAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB, ' + new Date().toLocaleDateString('id-ID')
+            };
+
+            const cloudSyncEl = document.getElementById('cloudSyncStatus');
+            cloudSyncEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-brand-blue animate-pulse"></i><span>Menyimpan nilai ke Dasbor Guru...</span>`;
+
+            if (window.saveResultToCloud) {
+                await window.saveResultToCloud(resultData);
+                cloudSyncEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i><span class="text-emerald-700 font-bold">Data nilai berhasil tersimpan di Dasbor Guru!</span>`;
+            }
+        }
+
+        function resetToQuiz() {
+            showScreen('screenRegistration');
+        }
+
+
+        // TEACHER DASHBOARD CONTROLLER
+        let rawDashboardData = [];
+
+        function openTeacherDashboard() {
+            playSFX('click');
+            showScreen('screenTeacherDashboard');
+
+            // Update storage status badge
+            const isCloud = window.checkCloudStatus && window.checkCloudStatus();
+            const modeBadge = document.getElementById('dashStorageModeBadge');
+            const modeText = document.getElementById('dashStorageModeText');
+            const subtext = document.getElementById('dashStorageSubtext');
+
+            if (isCloud) {
+                modeBadge.className = "text-xs font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full flex items-center space-x-1";
+                modeText.textContent = "☁️ Cloud Sync (Real-time Online)";
+                subtext.textContent = "Data tersimpan otomatis di Cloud Firestore dan tersinkronisasi antar seluruh perangkat murid.";
+            } else {
+                modeBadge.className = "text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full flex items-center space-x-1";
+                modeText.textContent = "📱 Mode Lokal Browser";
+                subtext.textContent = "Menampilkan data hasil kuis di perangkat ini. Klik tombol '+ Contoh Data Murid' untuk menguji tampilan dasbor secara lengkap.";
+            }
+
+            // Subscribe to real-time Firestore or Local updates
+            if (window.subscribeToCloudResults) {
+                if (dashboardDataUnsubscribe) dashboardDataUnsubscribe();
+                dashboardDataUnsubscribe = window.subscribeToCloudResults((data) => {
+                    rawDashboardData = data;
+                    renderDashboardTable(data);
+                });
+            }
+        }
+
+        // SEED SAMPLE DATA FOR TEACHER DEMO / TESTING
+        function seedSampleStudents() {
+            playSFX('click');
+            const samples = [
+                { studentName: "Siti Nurhaliza", studentClass: "3-A", avatar: "🐱", mode: "adaptive", score: 100, correctCount: 10, totalQuestions: 10, accuracy: 100, completedAt: "08.15 WIB, Hari Ini" },
+                { studentName: "Budi Pratama", studentClass: "3-A", avatar: "🐻", mode: "adaptive", score: 90, correctCount: 9, totalQuestions: 10, accuracy: 90, completedAt: "08.20 WIB, Hari Ini" },
+                { studentName: "Edo Putra", studentClass: "3-B", avatar: "🤖", mode: "level1", score: 80, correctCount: 8, totalQuestions: 10, accuracy: 80, completedAt: "08.30 WIB, Hari Ini" },
+                { studentName: "Lani Wijaya", studentClass: "3-B", avatar: "🐰", mode: "level2", score: 70, correctCount: 7, totalQuestions: 10, accuracy: 70, completedAt: "08.45 WIB, Hari Ini" },
+                { studentName: "Doni Kusuma", studentClass: "3-C", avatar: "🐻", mode: "level3", score: 50, correctCount: 5, totalQuestions: 10, accuracy: 50, completedAt: "09.00 WIB, Hari Ini" }
+            ];
+
+            samples.forEach(s => {
+                if (window.saveResultToCloud) {
+                    window.saveResultToCloud(s);
+                }
+            });
+
+            alertCustom("Berhasil menambahkan 5 contoh data murid! Anda sekarang dapat mencoba fitur rekap, pencarian, filter kelas, dan ekspor file.");
+        }
+
+        function refreshDashboardData() {
+            playSFX('click');
+            renderDashboardTable(rawDashboardData);
+        }
+
+        function renderDashboardTable(dataList) {
+            const tbody = document.getElementById('dashboardTableBody');
+            const emptyMsg = document.getElementById('emptyTableMessage');
+            tbody.innerHTML = '';
+
+            if (!dataList || dataList.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                updateDashboardAnalytics([]);
+                return;
+            }
+            emptyMsg.classList.add('hidden');
+
+            updateDashboardAnalytics(dataList);
+
+            dataList.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition";
+
+                let predicateBadge = "";
+                if (item.accuracy >= 80) {
+                    predicateBadge = `<span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">Sangat Baik</span>`;
+                } else if (item.accuracy >= 60) {
+                    predicateBadge = `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-[10px]">Baik</span>`;
+                } else {
+                    predicateBadge = `<span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-[10px]">Bimbingan</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-4 text-slate-500 text-[11px]">${item.completedAt || '-'}</td>
+                    <td class="p-4 font-bold text-slate-800 flex items-center space-x-2">
+                        <span>${item.avatar || '👤'}</span>
+                        <span>${item.studentName}</span>
+                    </td>
+                    <td class="p-4 font-semibold text-slate-600">${item.studentClass}</td>
+                    <td class="p-4 font-medium text-slate-500 uppercase text-[10px]">${item.mode || 'Adaptive'}</td>
+                    <td class="p-4 text-center font-bold text-slate-700">${item.correctCount} / ${item.totalQuestions}</td>
+                    <td class="p-4 text-center font-extrabold text-brand-orange text-sm">${item.score}</td>
+                    <td class="p-4 text-center">${predicateBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateDashboardAnalytics(dataList) {
+            const total = dataList.length;
+            document.getElementById('dashTotalStudents').textContent = total;
+
+            if (total === 0) {
+                document.getElementById('dashAvgScore').textContent = '0';
+                document.getElementById('dashMaxScore').textContent = '0';
+                document.getElementById('dashAvgAccuracy').textContent = '0%';
+                return;
+            }
+
+            const totalScore = dataList.reduce((acc, curr) => acc + (curr.score || 0), 0);
+            const maxScore = Math.max(...dataList.map(d => d.score || 0));
+            const totalAcc = dataList.reduce((acc, curr) => acc + (curr.accuracy || 0), 0);
+
+            document.getElementById('dashAvgScore').textContent = Math.round(totalScore / total);
+            document.getElementById('dashMaxScore').textContent = maxScore;
+            document.getElementById('dashAvgAccuracy').textContent = `${Math.round(totalAcc / total)}%`;
+        }
+
+        function filterDashboardTable() {
+            const searchVal = document.getElementById('dashSearchInput').value.toLowerCase();
+            const classVal = document.getElementById('dashClassFilter').value;
+
+            const filtered = rawDashboardData.filter(item => {
+                const matchesSearch = item.studentName.toLowerCase().includes(searchVal);
+                const matchesClass = (classVal === 'ALL') || (item.studentClass === classVal);
+                return matchesSearch && matchesClass;
+            });
+
+            renderDashboardTable(filtered);
+        }
+
+
+        // EXPORT TO EXCEL (.xlsx)
+        function exportToExcel() {
+            playSFX('click');
+            if (rawDashboardData.length === 0) {
+                alertCustom("Belum ada data untuk diunduh!");
+                return;
+            }
+
+            const exportRows = rawDashboardData.map((d, index) => ({
+                "No": index + 1,
+                "Tanggal & Waktu": d.completedAt || "-",
+                "Nama Siswa": d.studentName,
+                "Kelas": d.studentClass,
+                "Mode Kuis": d.mode,
+                "Benar": d.correctCount,
+                "Total Soal": d.totalQuestions,
+                "Skor Akhir": d.score,
+                "Akurasi (%)": d.accuracy + "%"
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Hasil Kuis");
+
+            XLSX.writeFile(workbook, `Laporan_Kuis_Bahasa_SD_Kelas3_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        // EXPORT TO PDF (.pdf)
+        function exportToPDF() {
+            playSFX('click');
+            if (rawDashboardData.length === 0) {
+                alertCustom("Belum ada data untuk diunduh!");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Document Header
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.text("Laporan Hasil Kuis Bahasa Indonesia (Kelas 3 SD)", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 14, 27);
+            doc.text(`Total Siswa Terdata: ${rawDashboardData.length}`, 14, 33);
+
+            const tableColumn = ["No", "Tanggal", "Nama Siswa", "Kelas", "Benar", "Skor", "Akurasi"];
+            const tableRows = rawDashboardData.map((d, i) => [
+                i + 1,
+                d.completedAt || "-",
+                d.studentName,
+                d.studentClass,
+                `${d.correctCount}/${d.totalQuestions}`,
+                d.score,
+                `${d.accuracy}%`
+            ]);
+
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 38,
+                theme: 'grid',
+                headStyles: { fillColor: [67, 97, 238] }
+            });
+
+            doc.save(`Laporan_Kuis_Bahasa_SD_Kelas3_${new Date().toISOString().slice(0,10)}.pdf`);
+        }
+
+        // EXPORT TO WORD (.doc)
+        function exportToWord() {
+            playSFX('click');
+            if (rawDashboardData.length === 0) {
+                alertCustom("Belum ada data untuk diunduh!");
+                return;
+            }
+
+            let htmlContent = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head><title>Laporan Hasil Kuis</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+                    th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; font-size: 12px; }
+                    th { background-color: #4361EE; color: white; }
+                    h2 { color: #333333; }
+                </style>
+                </head>
+                <body>
+                    <h2>Laporan Hasil Kuis Bahasa Indonesia - SD Kelas 3</h2>
+                    <p>Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Tanggal & Waktu</th>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Benar</th>
+                                <th>Skor</th>
+                                <th>Akurasi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            rawDashboardData.forEach((d, i) => {
+                htmlContent += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${d.completedAt || '-'}</td>
+                        <td>${d.studentName}</td>
+                        <td>${d.studentClass}</td>
+                        <td>${d.correctCount} / ${d.totalQuestions}</td>
+                        <td><b>${d.score}</b></td>
+                        <td>${d.accuracy}%</td>
+                    </tr>
+                `;
+            });
+
+            htmlContent += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob(['\ufeff' + htmlContent], {
+                type: 'application/msword'
+            });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Laporan_Kuis_Bahasa_SD_Kelas3_${new Date().toISOString().slice(0,10)}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Custom notification replace browser alert
+        function alertCustom(msg) {
+            const alertModal = document.createElement('div');
+            alertModal.className = "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4";
+            alertModal.innerHTML = `
+                <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-xl">
+                    <div class="text-3xl text-amber-500"><i class="fa-solid fa-circle-info"></i></div>
+                    <p class="text-sm font-semibold text-slate-700">${msg}</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="w-full py-2 bg-brand-blue text-white rounded-xl font-bold text-xs">
+                        Tutup
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(alertModal);
+        }
+
+        // Initialize default screen on page load
+        window.onload = function() {
+            showScreen('screenRegistration');
+        };
+    </script>
+</body>
+</html>
